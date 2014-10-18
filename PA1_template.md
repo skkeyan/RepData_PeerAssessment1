@@ -1,25 +1,39 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 
 ## Loading and preprocessing the data
-```{r}
+
+```r
 steps_loaded <- read.csv("activity.csv")
 steps_loaded$date <- as.Date(steps_loaded$date)
 ```
 
 ## What is mean total number of steps taken per day?
-```{r}
+
+```r
 # Load the sqldf library
 library(sqldf)
+```
 
+```
+## Loading required package: gsubfn
+## Loading required package: proto
+## Loading required package: RSQLite
+## Loading required package: DBI
+## Loading required package: RSQLite.extfuns
+```
+
+```r
 # Creating the dataset having the total number of steps by date
 
 steps_by_date <- sqldf("select date,sum(steps) from steps_loaded group by date",row.names = TRUE)
+```
+
+```
+## Loading required package: tcltk
+```
+
+```r
 names(steps_by_date) <- c("date","numsteps")
 
 steps_by_date$numsteps <- as.integer(steps_by_date$numsteps)
@@ -28,14 +42,30 @@ steps_by_date <- steps_by_date[na_rows_filter,]  # Removing the NA rows
 
 # Plotting the histogram
 hist(steps_by_date$numsteps,freq=TRUE,xlab="Number of Steps",ylab = "Frequency",main="Histogram of number of steps",col="blue")
+```
 
+![plot of chunk unnamed-chunk-2](./PA1_template_files/figure-html/unnamed-chunk-2.png) 
+
+```r
 # Calculating the mean and median
 mean(steps_by_date$numsteps)
+```
+
+```
+## [1] 10766
+```
+
+```r
 median(steps_by_date$numsteps)
 ```
 
+```
+## [1] 10765
+```
+
 ## What is the average daily activity pattern?
-```{r}
+
+```r
 # Creating the dataset having average number of steps by interval
 
 steps_by_interval <- sqldf("select interval,avg(steps) from steps_loaded group by interval",row.names = TRUE)
@@ -43,16 +73,31 @@ names(steps_by_interval) <- c("interval","avgsteps")
 
 #Plotting the data
 with(steps_by_interval,plot(interval,avgsteps,type="l",xlab="Interval",ylab="Average Number of Steps",xaxt="n"))
+```
 
+![plot of chunk unnamed-chunk-3](./PA1_template_files/figure-html/unnamed-chunk-3.png) 
+
+```r
 # Calculating the Interval that has the highest average number of steps across all days
 steps_by_interval[(which.max(steps_by_interval[,2])),1]
 ```
+
+```
+## [1] 835
+```
 ## Imputing missing values
-```{r}
+
+```r
 na_vector <- is.na(steps_loaded$steps)   # Filter for NA rows
 steps_na_rows <- steps_loaded[na_vector,] # All rows with NA values for steps
 nrow(steps_na_rows)   # Number of NA rows in the dataset
+```
 
+```
+## [1] 2304
+```
+
+```r
 steps_not_na_rows <- steps_loaded[!na_vector,]  # All rows with no NA values for steps
 
 # Getting to the imputed values by merging the datasets
@@ -68,14 +113,29 @@ names(steps_by_date_fullset) <- c("date","numsteps")
 
 # Plotting the histogram for the full dataset with no NA rows
 hist(steps_by_date_fullset$numsteps,freq=TRUE,xlab="Number of Steps",ylab = "Frequency",main="Histogram of number of steps",col="red")
+```
 
+![plot of chunk unnamed-chunk-4](./PA1_template_files/figure-html/unnamed-chunk-4.png) 
+
+```r
 # Calculating the mean and median
 mean(steps_by_date_fullset$numsteps)
-median(steps_by_date_fullset$numsteps)
+```
 
 ```
+## [1] 10750
+```
+
+```r
+median(steps_by_date_fullset$numsteps)
+```
+
+```
+## [1] 10641
+```
 ## Are there differences in activity patterns between weekdays and weekends?
-```{r}
+
+```r
 # Setting the weekend flag
 
 steps_full_set$day <- weekdays(steps_full_set$date)
@@ -100,3 +160,5 @@ g <- g + geom_line() + facet_wrap( ~ weekendflag, ncol=1) + labs(x = "Interval")
 
 print(g)
 ```
+
+![plot of chunk unnamed-chunk-5](./PA1_template_files/figure-html/unnamed-chunk-5.png) 
